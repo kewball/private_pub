@@ -17,11 +17,16 @@ module PrivatePub
     end
 
     # Loads the  configuration from a given YAML file and environment (such as production)
-    def load_config(filename, environment)
-      # yaml = YAML.load_file(filename)[environment.to_s]
-      yaml = YAML.load(ERB.new(File.read(filename)).result)[environment.to_s]
+    # theaddr is Matt's hack for dynamic host addressing
+    # theaddr is set in private_pub.ru
+    def load_config(filename, environment, theaddr=nil)
+      yaml = YAML.load_file(filename)[environment.to_s]
       raise ArgumentError, "The #{environment} environment does not exist in #{filename}" if yaml.nil?
       yaml.each { |k, v| config[k.to_sym] = v }
+      if theaddr
+        # instead of hard-coded config[:server] via YAML, we re-assemble it 
+        config[:server] = "http://#{theaddr}:#{config[:srv_port]}/#{config[:srv_path]}"
+      end
     end
 
     # Publish the given data to a specific channel. This ends up sending
